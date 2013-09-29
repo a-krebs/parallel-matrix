@@ -1,20 +1,22 @@
-OUT=		sequential parallel test
+OUT=		sequential parallel
 SHAREDOBJS=	shared.o
 SEQOBJS=	sequential.o $(SHAREDOBJS)
 PAROBJS=	parallel.o $(SHAREDOBJS)
 TESTOBJS=	test.o $(SHAREDOBJS)
-CFLAGS+=	-g
 
 all: $(OUT)
 
+test: CFLAGS+= -g
+test: CFLAGS+= -DTEST
+
 sequential: $(SEQOBJS)
-	cc -g -o sequential $(SEQOBJS)
+	cc $(CFLAGS) -o sequential $(SEQOBJS)
 
 parallel: $(PAROBJS)
-	cc -g -o parallel $(PAROBJS)
+	cc $(CFLAGS) -o parallel $(PAROBJS)
 
 test: $(TESTOBJS)
-	cc -g -o test $(TESTOBJS)
+	cc $(CFLAGS) -o test $(TESTOBJS) 
 
 sequential.o: sequential.c sequential.h
 
@@ -25,4 +27,4 @@ shared.o: shared.c shared.h
 test.o: test.c
 
 clean:
-	-rm -f *.o $(OUT)
+	-rm -f *.o $(OUT) test
