@@ -15,7 +15,7 @@ int tests_run = 0;
 /*
  * Allocate and zero out memory area for square matrix of given size.
  *
- * Returns pointer to matrix of integers.
+ * Returns pointer to matrix of integers or NULL on failure.
  */
 int **allocMatrixInt(int size) {
 	int i = 0;
@@ -24,10 +24,12 @@ int **allocMatrixInt(int size) {
 
 	// initialize row pointers
 	m = calloc(size, sizeof(int*));
+	if (m == NULL) return NULL;
 
 	for (i = 0; i < size; i++) {
 		// allocate column pointers
-		m[i] = calloc(size, sizeof(int*));
+		m[i] = calloc(size, sizeof(int));
+		if (m[i] == NULL) return NULL;
 		for (j = 0; j < size; j++) {
 			// initialize column
 			m[i][j] = 0;
@@ -43,8 +45,10 @@ static char *test_allocMatrixInt() {
 	int **m = NULL;
 
 	m = allocMatrixInt(testSize);
+	mu_assert("Matrix memory not allocated.", m != NULL);
 
 	for (i = 0; i < testSize; i++) {
+		mu_assert("Matrix memory not allocated.", m[i] != NULL);
 		for (j = 0; j < testSize; j++) {
 			mu_assert("Matrix not initialized to 0.", m[i][j] == 0);
 		}
