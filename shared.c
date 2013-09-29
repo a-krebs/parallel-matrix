@@ -9,6 +9,8 @@
 #include "minunit.h"
 #include "shared.h"
 
+#define TEST_SIZE 1000
+
 /* for use with minumit */
 int tests_run = 0;
 
@@ -39,7 +41,7 @@ int **allocMatrixInt(int size) {
 }
 
 static char *test_allocMatrixInt() {
-	int testSize = 1000;
+	int testSize = TEST_SIZE;
 	int i = 0;
 	int j = 0;
 	int **m = NULL;
@@ -68,6 +70,44 @@ void freeMatrixInt(int **m, int size) {
 	}
 	free(m);
 }
+
+/*
+ * Fill matrix with random integers using random() with given seed.
+ */
+void initMatrixInt(int **m, int size, unsigned int seed){
+	int i = 0;
+	int j = 0;
+
+	srandom(seed);
+
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			m[i][j] = (int)random();
+		}
+	}
+}
+
+static char *test_initMatrixInt() {
+	int testSize = TEST_SIZE;
+	unsigned int testSeed = 1234;
+	int i = 0;
+	int j = 0;
+
+	int **a = allocMatrixInt(testSize);
+	int **b = allocMatrixInt(testSize);
+
+	initMatrixInt(a, testSize, testSeed);
+	initMatrixInt(b, testSize, testSeed);
+
+	for (i = 0; i < testSize; i++) {
+		for (j = 0; j < testSize; j++) {
+			mu_assert("Matrix init a != b", a[i][j] == b[i][j]);
+		}
+	}
+	freeMatrixInt(a, testSize);
+	freeMatrixInt(b, testSize);
+}
+
 
 /*
  * Parse arguments into given struct.
@@ -120,5 +160,6 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 
 char *test_all_shared() {
 	mu_run_test(test_allocMatrixInt);
+	mu_run_test(test_initMatrixInt);
 	return 0;
 }
