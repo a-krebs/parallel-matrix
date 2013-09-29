@@ -128,23 +128,32 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 	opterr = 0;
 	while ((option = getopt(argc, argv, "p:s:")) != -1) {
 		switch (option) {
-			case 'p':
-				procs = atoi(optarg);
-				break;
-			case 's':
-				size = atoi(optarg);
-				break;
-			case '?':
-				if ((optopt == 'p') || (optopt == 's')){
-					fprintf(stderr, "Option -%s requires an argument.\n", optopt);
-				} else if (isprint(optopt)) {
-					fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-				} else {
-					fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-				}
-				/* fall through to default */
-			default:
-				return -1;
+		case 'p':
+			procs = atoi(optarg);
+			break;
+		case 's':
+			size = atoi(optarg);
+			break;
+		case '?':
+			if ((optopt == 'p') || (optopt == 's')) {
+				fprintf(
+				    stderr,
+				    "Option -%s requires an argument.\n",
+				    optopt);
+			} else if (isprint(optopt)) {
+				fprintf(
+				    stderr,
+				    "Unknown option `-%c'.\n",
+				    optopt);
+			} else {
+				fprintf(
+				    stderr,
+				    "Unknown option character `\\x%x'.\n",
+				    optopt);
+			}
+			/* fall through to default */
+		default:
+			return -1;
 		}
 	}
 	
