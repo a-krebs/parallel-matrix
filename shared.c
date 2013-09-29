@@ -100,7 +100,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 				}
 				/* fall through to default */
 			default:
-				return 1;
+				return -1;
 		}
 	}
 	
