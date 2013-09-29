@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "minunit.h"
-#include "test_shared.c"
+#include "shared.h"
 
 int tests_run = 0;
 
