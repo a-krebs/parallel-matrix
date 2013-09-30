@@ -18,9 +18,9 @@ parallel: $(PAROBJS)
 test: $(TESTOBJS)
 	$(CC) -o test $(TESTOBJS) 
 
-sequential.o: sequential.c sequential.h
+sequential.o: sequential.c
 
-parallel.o: parallel.c parallel.h
+parallel.o: parallel.c
 
 shared.o: .FORCE
 
