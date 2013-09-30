@@ -27,7 +27,7 @@ void printTOD() {
 	gettimeofday(&time, NULL);
 
 	strftime(buffer, 32,"%H:%M:%S", localtime(&time.tv_sec));
-	printf("%s\n", buffer);
+	printf("%s.%03ld\n", buffer, time.tv_usec/1000);
 }
 
 /*
