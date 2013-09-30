@@ -27,7 +27,7 @@ void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd) {
 	int k = 0;
 	int product = 0;
 
-	for (rowC = 0; rowC < size; rowC++) {
+	for (rowC = rStart; rowC <= rEnd; rowC++) {
 		for (colC = 0; colC < size; colC++) {
 			product = 0;
 			for (k = 0; k < size; k++) {
@@ -187,8 +187,10 @@ static char *test_multiply() {
 			b[i][j] = testValues[j];
 		}
 	}
-
-	multiply(a, b, c, testSize, 0, 0);
+	
+	// mutiply matrix in parts
+	multiply(a, b, c, testSize, 0, 1);
+	multiply(a, b, c, testSize, 2, 2);
 
 	// test for known results
 	for (i = 0; i < testSize; i++) {
