@@ -181,13 +181,14 @@ static char *test_multiply() {
 	int **b = allocMatrixInt(testSize);
 	int **c = allocMatrixInt(testSize);
 
-	//initMatrixInt(a, testSize, testSeed);
-	//initMatrixInt(b, testSize, testSeed);
+	initMatrixInt(a, testSize, testSeed);
+	initMatrixInt(b, testSize, testSeed);
 
 	multiply(a, b, c, testSize, 0, 0);
 	printMatrix(a, testSize);
 	printMatrix(b, testSize);
 	printMatrix(c, testSize);
+	return NULL;
 }
 
 static char *test_allocMatrixInt() {
@@ -206,7 +207,7 @@ static char *test_allocMatrixInt() {
 		}
 	}
 	freeMatrixInt(m, testSize);
-	return 0;
+	return NULL;
 }
 
 static char *test_initMatrixInt() {
@@ -228,13 +229,14 @@ static char *test_initMatrixInt() {
 	}
 	freeMatrixInt(a, testSize);
 	freeMatrixInt(b, testSize);
+	return NULL;
 }
 
 char *test_all_shared() {
 	mu_run_test(test_allocMatrixInt);
 	mu_run_test(test_initMatrixInt);
 	mu_run_test(test_multiply);
-	return 0;
+	return NULL;
 }
 
 #endif
