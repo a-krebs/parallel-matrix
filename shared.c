@@ -22,22 +22,17 @@
  * Matrices should be allocated in memory and initialized as appropriate.
  */
 void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd) {
-	int rowA = 0;
-	int colA = 0;
-	int rowB = 0;
-	int colB = 0;
 	int rowC = 0;
 	int colC = 0;
+	int k = 0;
 	int product = 0;
 
 	for (rowC = 0; rowC < size; rowC++) {
 		for (colC = 0; colC < size; colC++) {
 			product = 0;
-			for (colA = 0; colA < size; colA++) {
-				for (rowB = 0; rowB < size; rowB++) {
-					product +=
-					    A[rowC][colA] * B[colC][rowB];
-				}
+			for (k = 0; k < size; k++) {
+				product +=
+				    A[rowC][k] * B[k][colC];
 			}
 			C[rowC][colC] = product;
 		}
@@ -174,20 +169,35 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 #if TEST
 
 static char *test_multiply() {
-	int testSize = 4;
+	int testSize = 3;
+	int testValues[3] = {1,2,3};
+	int testResults[3] = {6,12,18};
+	int i = 0;
+	int j = 0;
 	unsigned int testSeed = 1234;
 
 	int **a = allocMatrixInt(testSize);
 	int **b = allocMatrixInt(testSize);
 	int **c = allocMatrixInt(testSize);
 
-	initMatrixInt(a, testSize, testSeed);
-	initMatrixInt(b, testSize, testSeed);
+	// initialize with known values
+	for (i = 0; i < testSize; i++) {
+		for (j = 0; j < testSize; j++) {
+			a[i][j] = testValues[j];
+			b[i][j] = testValues[j];
+		}
+	}
 
 	multiply(a, b, c, testSize, 0, 0);
-	printMatrix(a, testSize);
-	printMatrix(b, testSize);
-	printMatrix(c, testSize);
+
+	// test for known results
+	for (i = 0; i < testSize; i++) {
+		for (j = 0; j < testSize; j++) {
+			mu_assert(
+			    "Matrix multiplication incorrect.",
+			    c[i][j] == testResults[j]);
+		}
+	}
 	return NULL;
 }
 
