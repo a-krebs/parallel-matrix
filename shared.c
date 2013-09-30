@@ -6,12 +6,29 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <time.h>
+#include <string.h>
 #include "shared.h"
 
 #if TEST
 	#include "minunit.h"
 	#define TEST_SIZE 1000
 #endif
+
+/*
+ * Print the time of day to stdout.
+ */
+void printTOD() {
+	char buffer[32]; // length is arbitrary
+	struct timeval time;
+	memset(&time, 0, sizeof(struct timeval));
+
+	gettimeofday(&time, NULL);
+
+	strftime(buffer, 32,"%H:%M:%S", localtime(&time.tv_sec));
+	printf("%s\n", buffer);
+}
 
 /*
  * Given matrices A, B and C, multiply the given rows of A with the
