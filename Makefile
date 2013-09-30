@@ -4,6 +4,7 @@ SEQOBJS=	sequential.o $(SHAREDOBJS)
 PAROBJS=	parallel.o $(SHAREDOBJS)
 TESTOBJS=	test.o $(SHAREDOBJS)
 
+all: CFLAGS+= -O2
 all: $(OUT)
 
 test: CFLAGS+= -g -DTEST
