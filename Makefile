@@ -6,7 +6,7 @@ TESTOBJS=	test.o $(SHAREDOBJS)
 
 all: $(OUT)
 
-test: CC+= -g -DTEST
+test: CFLAGS+= -g -DTEST
 
 sequential: $(SEQOBJS)
 	$(CC) -o sequential $(SEQOBJS)
@@ -21,7 +21,9 @@ sequential.o: sequential.c sequential.h
 
 parallel.o: parallel.c parallel.h
 
-shared.o: shared.c shared.h
+shared.o: .FORCE
+
+.FORCE: shared.c shared.h
 
 test.o: test.c
 
