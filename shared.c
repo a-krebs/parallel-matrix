@@ -134,7 +134,7 @@ void initMatrixInt(int **m, int size, unsigned int seed){
  */
 int parse_args(int argc, char *argv[], struct arguments* args) {
 	/* expected arguments */
-	int procs = 0;
+	int procs = 1;		// default to 1
 	int size = 0;
 
 	/* vars needed for parsing */
@@ -174,8 +174,21 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 	}
 	
 	printf("p = %d, s = %d\n", procs, size);
+
+	/* Make sure p is at least 1 */
+	if (procs < 1) {
+		printf("p must be at least 1.\n");
+		return -1;
+	}
+
+	/* Make sure s is evenly divisible into p */
+	if ((size > 0) && (size % procs != 0)) {
+		printf("s must be evenly divisible into p\n");
+		return -1;
+	}
 	for (index = optind; index < argc; index++) {
-		printf ("Non-option argument %s\n", argv[index]);
+		printf("Non-option argument %s\n", argv[index]);
+		return -1;
 	}
 
 	args->procs = procs;

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	struct arguments *args = calloc(1, sizeof(struct arguments));
 	
 	argsParsed = parse_args(argc, argv, args);
-	if (argsParsed == 1) {
+	if (argsParsed != 0) {
 		exit(EXIT_FAILURE);
 	}
 
