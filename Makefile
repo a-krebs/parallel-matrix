@@ -10,8 +10,11 @@ all: $(OUT)
 verify: CFLAGS+= -DVERIFY
 verify: $(OUT)
 
-debug: CFLAGS+= -DDEBUG
+debug: CFLAGS+= -g -DDEBUG
 debug: $(OUT)
+
+vdebug: CFLAGS+= -g -DDEBUG -DVERIFY
+vdebug: $(OUT)
 
 test: CFLAGS+= -g -DTEST
 

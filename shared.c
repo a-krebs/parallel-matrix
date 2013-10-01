@@ -44,6 +44,10 @@ void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd) {
 	int k = 0;
 	int product = 0;
 
+#if DEBUG
+	printf("Multiplying and storing to: %p\n", (void *)C);
+#endif
+
 	for (rowC = rStart; rowC <= rEnd; rowC++) {
 		for (colC = 0; colC < size; colC++) {
 			product = 0;
@@ -62,6 +66,10 @@ void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd) {
 void printMatrix(int **m, int size) {
 	int row = 0;
 	int col = 0;
+
+#if DEBUG
+	printf("Printing from %p\n", (void*) m);
+#endif
 
 	for (row = 0; row < size; row++) {
 		for (col = 0; col < size; col++) {

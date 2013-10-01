@@ -8,12 +8,6 @@
 #include "shared.h"
 #include "thread.h"
 
-/* shared memory */
-int **A = NULL;
-int **B = NULL;
-int **C = NULL;
-int Size = 0;
-
 int main(int argc, char *argv[]) {
 	int i = 0;
 	int argsParsed = 0;
@@ -24,6 +18,10 @@ int main(int argc, char *argv[]) {
 	int rStart = 0;
 	int rEnd = 0;
 	unsigned int seed = 0;
+	int **A = NULL;
+	int **B = NULL;
+	int **C = NULL;
+	int size = 0;
 	
 	args = calloc(1, sizeof(struct arguments));
 	argsParsed = parse_args(argc, argv, args);
@@ -31,19 +29,19 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	Size = args->size;
+	size = args->size;
 	numThreads = args->procs -1;	/* -1 to account for master */
 	seed = args->seed;
 
 	/* allocate memory for matrices */
-	A = allocMatrixInt(Size);
-	B = allocMatrixInt(Size);
-	C = allocMatrixInt(Size);
+	A = allocMatrixInt(size);
+	B = allocMatrixInt(size);
+	C = allocMatrixInt(size);
 
 	/* initialize matrix contents */
 	srandom(seed);
-	initMatrixInt(A, Size);
-	initMatrixInt(B, Size);
+	initMatrixInt(A, size);
+	initMatrixInt(B, size);
 
 	/* allocate memory for threads */
 	threads = calloc(numThreads, sizeof(pthread_t));
@@ -51,7 +49,7 @@ int main(int argc, char *argv[]) {
 
 	/* split work between threads */
 	for (i = 0; i < numThreads; i++) {
-		rEnd = getRangeEnd(rStart, args->procs, Size);
+		rEnd = getRangeEnd(rStart, args->procs, size);
 		threadArgs[i].rStart = rStart;
 		threadArgs[i].rEnd = rEnd;
 		rStart = rEnd + 1;
@@ -61,7 +59,7 @@ int main(int argc, char *argv[]) {
 		threadArgs[i].C = C;
 	}
 	/* set rEnd for master thread */
-	rEnd = getRangeEnd(rStart, args->procs, Size);
+	rEnd = getRangeEnd(rStart, args->procs, size);
 
 	/* Spin up threads */
 	for (i = 0; i < numThreads; i++) {
@@ -72,8 +70,8 @@ int main(int argc, char *argv[]) {
 	// TODO
 	
 #if VERIFY
-	printMatrix(A, Size);
-	printMatrix(B, Size);
+	printMatrix(A, size);
+	printMatrix(B, size);
 #else
 	printTOD();
 #endif
@@ -82,7 +80,7 @@ int main(int argc, char *argv[]) {
 	printf("Master args: %d, %d\n", rStart, rEnd);
 #endif
 	/* master thread work */
-	multiply(A, B, C, Size, rStart, rEnd);
+	multiply(A, B, C, size, rStart, rEnd);
 
 	/* join threads */
 	for (i = 0; i < numThreads; i++) {
@@ -91,14 +89,14 @@ int main(int argc, char *argv[]) {
 		}
 	}
 #if VERIFY
-	printMatrix(C, Size);
+	printMatrix(C, size);
 #else
 	printTOD();
 #endif
 
-	freeMatrixInt(A, Size);
-	freeMatrixInt(B, Size);
-	freeMatrixInt(C, Size);
+	freeMatrixInt(A, size);
+	freeMatrixInt(B, size);
+	freeMatrixInt(C, size);
 	free(args);
 	free(threads);
 	free(threadArgs);
