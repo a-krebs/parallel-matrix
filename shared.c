@@ -69,6 +69,7 @@ void printMatrix(int **m, int size) {
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
 
 /*
