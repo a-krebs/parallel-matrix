@@ -111,13 +111,13 @@ void freeMatrixInt(int **m, int size) {
 }
 
 /*
- * Fill matrix with random integers using random() with given seed.
+ * Fill matrix with random integers using random().
+ *
+ * Run srandom() to seed random prior to calling if desired.
  */
-void initMatrixInt(int **m, int size, unsigned int seed){
+void initMatrixInt(int **m, int size){
 	int i = 0;
 	int j = 0;
-
-	srandom(seed);
 
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
@@ -137,13 +137,14 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 	/* expected arguments */
 	int procs = 1;		// default to 1
 	int size = 0;
+	unsigned int seed = 1000;
 
 	/* vars needed for parsing */
 	int index;
 	int option;
 
 	opterr = 0;
-	while ((option = getopt(argc, argv, "p:s:")) != -1) {
+	while ((option = getopt(argc, argv, "p:s:k:")) != -1) {
 		switch (option) {
 		case 'p':
 			procs = atoi(optarg);
@@ -151,8 +152,13 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 		case 's':
 			size = atoi(optarg);
 			break;
+		case 'k':
+			option = atoi(optarg);
+			break;
 		case '?':
-			if ((optopt == 'p') || (optopt == 's')) {
+			if ((optopt == 'p')
+			    || (optopt == 's')
+			    || (optopt == 'k')){
 				fprintf(
 				    stderr,
 				    "Option -%s requires an argument.\n",
@@ -174,7 +180,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 		}
 	}
 	
-	printf("p = %d, s = %d\n", procs, size);
+	printf("p = %d, s = %d, k = %d\n", procs, size, seed);
 
 	/* Make sure p is at least 1 */
 	if (procs < 1) {
@@ -194,6 +200,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 
 	args->procs = procs;
 	args->size = size;
+	args->seed = seed;
 	return 0;
 }
 
