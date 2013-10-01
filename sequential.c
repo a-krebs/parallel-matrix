@@ -41,5 +41,6 @@ int main(int argc, char *argv[]) {
 	freeMatrixInt(A, size);
 	freeMatrixInt(B, size);
 	freeMatrixInt(C, size);
+	free(args);
 	exit(EXIT_SUCCESS);
 }
