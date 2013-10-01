@@ -1,11 +1,17 @@
 OUT=		sequential parallel
 SHAREDOBJS=	shared.o
 SEQOBJS=	sequential.o $(SHAREDOBJS)
-PAROBJS=	parallel.o $(SHAREDOBJS)
+PAROBJS=	parallel.o thread.o $(SHAREDOBJS)
 TESTOBJS=	test.o $(SHAREDOBJS)
 
 all: CFLAGS+= -O2
 all: $(OUT)
+
+verify: CFLAGS+= -DVERIFY
+verify: $(OUT)
+
+debug: CFLAGS+= -DDEBUG
+debug: $(OUT)
 
 test: CFLAGS+= -g -DTEST
 
@@ -13,7 +19,7 @@ sequential: $(SEQOBJS)
 	$(CC) -o sequential $(SEQOBJS)
 
 parallel: $(PAROBJS)
-	$(CC) -o parallel $(PAROBJS)
+	$(CC) -o parallel $(PAROBJS) -lpthread
 
 test: $(TESTOBJS)
 	$(CC) -o test $(TESTOBJS) 
@@ -21,6 +27,8 @@ test: $(TESTOBJS)
 sequential.o: sequential.c
 
 parallel.o: parallel.c
+
+thread.o: thread.c thread.h
 
 shared.o: .FORCE
 
