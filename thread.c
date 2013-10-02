@@ -6,12 +6,17 @@ void *slave(void *args) {
 	struct threadArgs *localArgs = (struct threadArgs *) args;
 
 #if DEBUG
-	printf("Args: %d, %d\n", localArgs->rStart, localArgs->rEnd);
+	printf("Args: %d, %d, size %d\n",
+	    localArgs->rStart, localArgs->rEnd, localArgs->size);
 #endif
 
 	multiply(
 	    localArgs->A, localArgs->B, localArgs->C,
 	    localArgs->size, localArgs->rStart, localArgs->rEnd);
+
+#if DEBUG
+	printMatrix(localArgs->C, localArgs->size);
+#endif
 	return EXIT_SUCCESS;
 }
 
