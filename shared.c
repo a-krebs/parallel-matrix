@@ -249,7 +249,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 			    || (optopt == 'k')){
 				fprintf(
 				    stderr,
-				    "Option -%s requires an argument.\n",
+				    "Option -%c requires an argument.\n",
 				    optopt);
 			} else if (isprint(optopt)) {
 				fprintf(
