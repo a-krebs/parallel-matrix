@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "thread.h"
 
+#define MASTER if (localArgs->id == 0)
+
 void *slave(void *args) {
 	struct threadArgs *localArgs = (struct threadArgs *) args;
 

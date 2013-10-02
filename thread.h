@@ -1,4 +1,5 @@
 struct threadArgs {
+	int id;
 	int rStart;
 	int rEnd;
 	int **A;

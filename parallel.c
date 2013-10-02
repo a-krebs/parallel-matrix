@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
 		threadArgs[i].B = B;
 		threadArgs[i].C = C;
 		threadArgs[i].size = size;
+		threadArgs[i].id = i;
 	}
 	/* set rEnd for master thread */
 	rEnd = getRangeEnd(rStart, args->procs, size);
