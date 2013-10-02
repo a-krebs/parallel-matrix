@@ -44,6 +44,10 @@ void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd) {
 	int k = 0;
 	int product = 0;
 
+#if DEBUG
+	printf("Multiplying and storing to: %p\n", (void *)C);
+#endif
+
 	for (rowC = rStart; rowC <= rEnd; rowC++) {
 		for (colC = 0; colC < size; colC++) {
 			product = 0;
@@ -63,12 +67,17 @@ void printMatrix(int **m, int size) {
 	int row = 0;
 	int col = 0;
 
+#if DEBUG
+	printf("Printing from %p\n", (void*) m);
+#endif
+
 	for (row = 0; row < size; row++) {
 		for (col = 0; col < size; col++) {
 			printf("%d\t", m[row][col]);
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
 
 /*
@@ -110,13 +119,13 @@ void freeMatrixInt(int **m, int size) {
 }
 
 /*
- * Fill matrix with random integers using random() with given seed.
+ * Fill matrix with random integers using random().
+ *
+ * Run srandom() to seed random prior to calling if desired.
  */
-void initMatrixInt(int **m, int size, unsigned int seed){
+void initMatrixInt(int **m, int size){
 	int i = 0;
 	int j = 0;
-
-	srandom(seed);
 
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
@@ -134,15 +143,16 @@ void initMatrixInt(int **m, int size, unsigned int seed){
  */
 int parse_args(int argc, char *argv[], struct arguments* args) {
 	/* expected arguments */
-	int procs = 0;
+	int procs = 1;		// default to 1
 	int size = 0;
+	unsigned int seed = 1000;
 
 	/* vars needed for parsing */
 	int index;
 	int option;
 
 	opterr = 0;
-	while ((option = getopt(argc, argv, "p:s:")) != -1) {
+	while ((option = getopt(argc, argv, "p:s:k:")) != -1) {
 		switch (option) {
 		case 'p':
 			procs = atoi(optarg);
@@ -150,8 +160,13 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 		case 's':
 			size = atoi(optarg);
 			break;
+		case 'k':
+			option = atoi(optarg);
+			break;
 		case '?':
-			if ((optopt == 'p') || (optopt == 's')) {
+			if ((optopt == 'p')
+			    || (optopt == 's')
+			    || (optopt == 'k')){
 				fprintf(
 				    stderr,
 				    "Option -%s requires an argument.\n",
@@ -173,13 +188,27 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 		}
 	}
 	
-	printf("p = %d, s = %d\n", procs, size);
+	printf("p = %d, s = %d, k = %d\n", procs, size, seed);
+
+	/* Make sure p is at least 1 */
+	if (procs < 1) {
+		printf("p must be at least 1.\n");
+		return -1;
+	}
+
+	/* Make sure s is evenly divisible into p */
+	if ((size > 0) && (size % procs != 0)) {
+		printf("s must be evenly divisible into p\n");
+		return -1;
+	}
 	for (index = optind; index < argc; index++) {
-		printf ("Non-option argument %s\n", argv[index]);
+		printf("Non-option argument %s\n", argv[index]);
+		return -1;
 	}
 
 	args->procs = procs;
 	args->size = size;
+	args->seed = seed;
 	return 0;
 }
 

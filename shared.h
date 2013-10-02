@@ -4,6 +4,7 @@
 struct arguments {
 	int procs;
 	int size;
+	int seed;
 };
 
 /*
@@ -26,6 +27,13 @@ void printMatrix(int **m, int size);
  * Struct memory area should be initialized.
  */
 int parse_args(int argc, char *argv[], struct arguments* args);
+
+/*
+ * Fill matrix with random integers using random().
+ *
+ * Run srandom() to seed random prior to calling if desired.
+ */
+void initMatrixInt(int **m, int size);
 
 /*
  * Allocate and zero out memory area for square matrix of given size.
