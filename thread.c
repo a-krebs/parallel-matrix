@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <pthread.h>
+#include "shared.h"
 #include "thread.h"
 
 #define MASTER if (localArgs->id == 0)
@@ -30,7 +33,7 @@ void *slave(void *args) {
 	/* barrier */
 	pthread_barrier_wait(&barrier);
 
-	MASTER { gettimeofday(&phase2End); }
+	MASTER { gettimeofday(&phase2End, NULL); }
 	return EXIT_SUCCESS;
 }
 
