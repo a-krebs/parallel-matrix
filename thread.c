@@ -10,6 +10,10 @@ void *slave(void *args) {
 	    localArgs->rStart, localArgs->rEnd, localArgs->size);
 #endif
 
+	/* barrier */
+	pthread_barrier_wait(&barrier);
+
+	/* do work */
 	multiply(
 	    localArgs->A, localArgs->B, localArgs->C,
 	    localArgs->size, localArgs->rStart, localArgs->rEnd);
@@ -17,6 +21,9 @@ void *slave(void *args) {
 #if DEBUG
 	printMatrix(localArgs->C, localArgs->size);
 #endif
+
+	/* barrier */
+	pthread_barrier_wait(&barrier);
 	return EXIT_SUCCESS;
 }
 

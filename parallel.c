@@ -8,6 +8,8 @@
 #include "shared.h"
 #include "thread.h"
 
+pthread_barrier_t barrier;
+
 int main(int argc, char *argv[]) {
 	int i = 0;
 	int argsParsed = 0;
@@ -47,6 +49,12 @@ int main(int argc, char *argv[]) {
 	threads = calloc(numThreads, sizeof(pthread_t));
 	threadArgs = calloc(numThreads, sizeof(struct threadArgs));
 
+	/* initialize barrier */
+	if (pthread_barrier_init(&barrier, NULL, args->procs) != 0) {
+		printf("Initializing barrier failed.\n");
+		exit(EXIT_FAILURE);
+	}
+
 	/* split work between threads */
 	for (i = 0; i < numThreads; i++) {
 		rEnd = getRangeEnd(rStart, args->procs, size);
@@ -69,7 +77,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* barrier */
-	// TODO
+	pthread_barrier_wait(&barrier);
 	
 #if VERIFY
 	printMatrix(A, size);
@@ -84,16 +92,22 @@ int main(int argc, char *argv[]) {
 	/* master thread work */
 	multiply(A, B, C, size, rStart, rEnd);
 
+	/* barrier */
+	pthread_barrier_wait(&barrier);
+
+#if !VERIFY
+	printTOD();
+#endif
+
 	/* join threads */
 	for (i = 0; i < numThreads; i++) {
 		if (pthread_join(threads[i], NULL) != 0) {
 			perror("Pthread_join fails");
 		}
 	}
+
 #if VERIFY
 	printMatrix(C, size);
-#else
-	printTOD();
 #endif
 
 	freeMatrixInt(A, size);
