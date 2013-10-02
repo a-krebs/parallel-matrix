@@ -1,3 +1,5 @@
+#include <sys/time.h>
+
 /*
  * Input arguments.
  */
@@ -18,6 +20,27 @@ struct arguments {
 void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd);
 
 /*
+ * Print the time of day to stdout.
+ */
+void printTOD();
+
+/*
+ * Print the time elapsed since r1 given r2
+ * (IE r2 is the later time, r1 is the earlier time.
+ */
+void printElapsedTime(struct timeval *r1, struct timeval *r2);
+
+/* Subtract the `struct timeval' values X and Y (X - Y),
+ * storing the result in RESULT.
+ *
+ * Return 1 if the difference is negative, otherwise 0.
+ *
+ * This function is taken from:
+ * http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
+ */
+int timevalSubtract(struct timeval *result, struct timeval *x, struct timeval *y);
+
+/*
  * Print the given matrix to stdout.
  */
 void printMatrix(int **m, int size);
@@ -27,6 +50,21 @@ void printMatrix(int **m, int size);
  * Struct memory area should be initialized.
  */
 int parse_args(int argc, char *argv[], struct arguments* args);
+
+/*
+ * Allocate matrices A, B, and C to given size.
+ * Initialize A and B with random data using given seed value.
+ *
+ * This is a wrapper function for calls to allocMatrixInt and initMatrixInt.
+ *
+ * Returns 0 if everything works, non-zero otherwise.
+ */
+int setupExp(int ***A, int ***B, int ***C, int size, unsigned int seed);
+
+/*
+ * Clean up allocated matrix memory
+ */
+void tearDownExp(int ***A, int ***B, int ***C, int size);
 
 /*
  * Fill matrix with random integers using random().

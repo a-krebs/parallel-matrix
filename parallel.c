@@ -9,22 +9,37 @@
 #include "thread.h"
 
 pthread_barrier_t barrier;
+struct timeval phase2Start;
+struct timeval phase2End;
 
 int main(int argc, char *argv[]) {
-	int i = 0;
-	int argsParsed = 0;
-	struct arguments *args = NULL;
-	pthread_t *threads = NULL;
-	struct threadArgs *threadArgs = NULL;
-	int numThreads = 0;
-	int rStart = 0;
-	int rEnd = 0;
-	unsigned int seed = 0;
+	/* matrices */
 	int **A = NULL;
 	int **B = NULL;
 	int **C = NULL;
+	/* arguments */
+	int argsParsed = 0;
+	struct arguments *args = NULL;
+	unsigned int seed = 0;
 	int size = 0;
+	/* threads */
+	pthread_t *threads = NULL;
+	struct threadArgs *threadArgs = NULL;
+	/* Master thread has own argument struct outside of array.
+	 * Making it part of the array was causing off-by-one when dispatching
+	 * threads. */
+	struct threadArgs *masterArgs = NULL;
+	int numThreads = 0;
+	int rStart = 0;
+	int rEnd = 0;
+	/* misc */
+	int i = 0;
+	/* timekeeping */
+	struct timeval baseline;		// start
+	struct timeval phase1End;		// before barrier
+	struct timeval end;			// after phase 2
 	
+	/* get arguments */
 	args = calloc(1, sizeof(struct arguments));
 	argsParsed = parse_args(argc, argv, args);
 	if (argsParsed != 0) {
@@ -35,19 +50,20 @@ int main(int argc, char *argv[]) {
 	numThreads = args->procs -1;	/* -1 to account for master */
 	seed = args->seed;
 
-	/* allocate memory for matrices */
-	A = allocMatrixInt(size);
-	B = allocMatrixInt(size);
-	C = allocMatrixInt(size);
+	/* PHASE 1 START */
 
-	/* initialize matrix contents */
-	srandom(seed);
-	initMatrixInt(A, size);
-	initMatrixInt(B, size);
+	/* baseline time */
+	gettimeofday(&baseline, NULL);
 
-	/* allocate memory for threads */
+	/* set up matrices */
+	if (setupExp(&A, &B, &C, size, seed) != 0) {
+		exit(EXIT_FAILURE);
+	}
+
+	/* allocate memory for threads and arguments */
 	threads = calloc(numThreads, sizeof(pthread_t));
 	threadArgs = calloc(numThreads, sizeof(struct threadArgs));
+	masterArgs = calloc(1, sizeof(struct threadArgs));
 
 	/* initialize barrier */
 	if (pthread_barrier_init(&barrier, NULL, args->procs) != 0) {
@@ -55,7 +71,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	/* split work between threads */
+	/* Split work between threads. */
 	for (i = 0; i < numThreads; i++) {
 		rEnd = getRangeEnd(rStart, args->procs, size);
 		threadArgs[i].rStart = rStart;
@@ -67,36 +83,37 @@ int main(int argc, char *argv[]) {
 		threadArgs[i].B = B;
 		threadArgs[i].C = C;
 		threadArgs[i].size = size;
+		threadArgs[i].id = i;
 	}
-	/* set rEnd for master thread */
+	/* set up master thread arguments */
 	rEnd = getRangeEnd(rStart, args->procs, size);
+	masterArgs->rStart = rStart;
+	masterArgs->rEnd = rEnd;
+	masterArgs->A = A;
+	masterArgs->B = B;
+	masterArgs->C = C;
+	masterArgs->size = size;
+	masterArgs->id = 0;
 
 	/* Spin up threads */
 	for (i = 0; i < numThreads; i++) {
 		pthread_create(&threads[i], NULL, slave, &threadArgs[i]);
 	}
 
-	/* barrier */
-	pthread_barrier_wait(&barrier);
-	
+	/* phase 1 time */
+	gettimeofday(&phase1End, NULL);
+
+	/* END PHASE 1 */
+	/* BEGIN PHASE 2 */
+
+	/* master thread work */
+	slave((void *)masterArgs);
+
+	/* PHASE 2 END */
+
 #if VERIFY
 	printMatrix(A, size);
 	printMatrix(B, size);
-#else
-	printTOD();
-#endif
-
-#if DEBUG
-	printf("Master args: %d, %d\n", rStart, rEnd);
-#endif
-	/* master thread work */
-	multiply(A, B, C, size, rStart, rEnd);
-
-	/* barrier */
-	pthread_barrier_wait(&barrier);
-
-#if !VERIFY
-	printTOD();
 #endif
 
 	/* join threads */
@@ -106,13 +123,25 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	/* end time */
+	gettimeofday(&end, NULL);
+
 #if VERIFY
 	printMatrix(C, size);
+#else
+	/* print times */
+	
+	printf("parallel,%d,%d,%d,", seed, size, args->procs);
+	printElapsedTime(&baseline, &phase1End);
+	printf(",");
+	printElapsedTime(&phase2Start, &phase2End);
+	printf(",");
+	printElapsedTime(&baseline, &end);
+	printf("\n");
 #endif
 
-	freeMatrixInt(A, size);
-	freeMatrixInt(B, size);
-	freeMatrixInt(C, size);
+	/* clean up and exit */
+	tearDownExp(&A, &B, &C, size);
 	free(args);
 	free(threads);
 	free(threadArgs);
