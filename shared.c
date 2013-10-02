@@ -361,6 +361,7 @@ static char *test_initMatrixInt() {
 
 	srandom(testSeed);
 	initMatrixInt(a, testSize);
+	srandom(testSeed);
 	initMatrixInt(b, testSize);
 
 	for (i = 0; i < testSize; i++) {
