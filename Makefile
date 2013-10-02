@@ -33,9 +33,7 @@ parallel.o: parallel.c
 
 thread.o: thread.c thread.h
 
-shared.o: .FORCE
-
-.FORCE: shared.c shared.h
+shared.o: shared.c shared.h
 
 test.o: test.c
 
