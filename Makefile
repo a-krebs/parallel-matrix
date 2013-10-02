@@ -46,4 +46,4 @@ shared.o: shared.c shared.h
 test.o: test.c
 
 clean:
-	-rm -f *.o $(OUT) test experiments.sh
+	-rm -f *.o $(OUT) test experiments.sh experiments
