@@ -54,9 +54,11 @@ int main(int argc, char *argv[]) {
 		threadArgs[i].rEnd = rEnd;
 		rStart = rEnd + 1;
 
+		/* set remaining thread arguments */
 		threadArgs[i].A = A;
 		threadArgs[i].B = B;
 		threadArgs[i].C = C;
+		threadArgs[i].size = size;
 	}
 	/* set rEnd for master thread */
 	rEnd = getRangeEnd(rStart, args->procs, size);
