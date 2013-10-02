@@ -20,6 +20,12 @@ vdebug: $(OUT)
 
 test: CFLAGS+= -g -DTEST
 
+run_prep: clean all experiments.sh
+
+experiments.sh: generate_tests.py
+	python generate_tests.py > experiments.sh
+	chmod +x experiments.sh
+
 sequential: $(SEQOBJS)
 	$(CC) -o sequential $(SEQOBJS)
 
@@ -40,4 +46,4 @@ shared.o: shared.c shared.h
 test.o: test.c
 
 clean:
-	-rm -f *.o $(OUT) test
+	-rm -f *.o $(OUT) test experiments.sh experiments
