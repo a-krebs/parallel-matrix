@@ -11,20 +11,30 @@
 pthread_barrier_t barrier;
 
 int main(int argc, char *argv[]) {
-	int i = 0;
+	/* matrices */
+	int **A = NULL;
+	int **B = NULL;
+	int **C = NULL;
+	/* arguments */
 	int argsParsed = 0;
 	struct arguments *args = NULL;
+	unsigned int seed = 0;
+	int size = 0;
+	/* threads */
 	pthread_t *threads = NULL;
 	struct threadArgs *threadArgs = NULL;
 	int numThreads = 0;
 	int rStart = 0;
 	int rEnd = 0;
-	unsigned int seed = 0;
-	int **A = NULL;
-	int **B = NULL;
-	int **C = NULL;
-	int size = 0;
+	/* misc */
+	int i = 0;
+	/* timekeeping */
+	struct timeval baseline;		// start
+	struct timeval phase1End;		// before barrier
+	struct timeval phase2Start;		// after barrier
+	struct timeval end;			// after phase 2
 	
+	/* get arguments */
 	args = calloc(1, sizeof(struct arguments));
 	argsParsed = parse_args(argc, argv, args);
 	if (argsParsed != 0) {
@@ -35,15 +45,15 @@ int main(int argc, char *argv[]) {
 	numThreads = args->procs -1;	/* -1 to account for master */
 	seed = args->seed;
 
-	/* allocate memory for matrices */
-	A = allocMatrixInt(size);
-	B = allocMatrixInt(size);
-	C = allocMatrixInt(size);
+	/* PHASE 1 START */
 
-	/* initialize matrix contents */
-	srandom(seed);
-	initMatrixInt(A, size);
-	initMatrixInt(B, size);
+	/* baseline time */
+	gettimeofday(&baseline, NULL);
+
+	/* set up matrices */
+	if (setupExp(&A, &B, &C, size, seed) != 0) {
+		exit(EXIT_FAILURE);
+	}
 
 	/* allocate memory for threads */
 	threads = calloc(numThreads, sizeof(pthread_t));
@@ -76,14 +86,22 @@ int main(int argc, char *argv[]) {
 		pthread_create(&threads[i], NULL, slave, &threadArgs[i]);
 	}
 
+	/* phase 1 time */
+	gettimeofday(&phase1End, NULL);
+
+	/* END PHASE 1 */
+
 	/* barrier */
 	pthread_barrier_wait(&barrier);
+
+	/* BEGIN PHASE 2 */
+
+	/* phase 2 time */
+	gettimeofday(&phase2Start, NULL);
 	
 #if VERIFY
 	printMatrix(A, size);
 	printMatrix(B, size);
-#else
-	printTOD();
 #endif
 
 #if DEBUG
@@ -95,9 +113,10 @@ int main(int argc, char *argv[]) {
 	/* barrier */
 	pthread_barrier_wait(&barrier);
 
-#if !VERIFY
-	printTOD();
-#endif
+	/* PHASE 2 END */
+
+	/* end time */
+	gettimeofday(&end, NULL);
 
 	/* join threads */
 	for (i = 0; i < numThreads; i++) {
@@ -108,11 +127,20 @@ int main(int argc, char *argv[]) {
 
 #if VERIFY
 	printMatrix(C, size);
+#else
+	/* print times */
+	
+	printf("parallel,%d,%d,%d,", seed, size, args->procs);
+	printElapsedTime(&baseline, &phase1End);
+	printf(",");
+	printElapsedTime(&phase2Start, &end);
+	printf(",");
+	printElapsedTime(&baseline, &end);
+	printf("\n");
 #endif
 
-	freeMatrixInt(A, size);
-	freeMatrixInt(B, size);
-	freeMatrixInt(C, size);
+	/* clean up and exit */
+	tearDownExp(&A, &B, &C, size);
 	free(args);
 	free(threads);
 	free(threadArgs);
