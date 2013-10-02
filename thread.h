@@ -7,5 +7,7 @@ struct threadArgs {
 	int size;
 };
 
+extern pthread_barrier_t barrier;
+
 void *slave(void *args);
 int getRangeEnd(int rStart, int p, int s);
