@@ -249,7 +249,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 			    || (optopt == 'k')){
 				fprintf(
 				    stderr,
-				    "Option -%s requires an argument.\n",
+				    "Option -%c requires an argument.\n",
 				    optopt);
 			} else if (isprint(optopt)) {
 				fprintf(
@@ -361,6 +361,7 @@ static char *test_initMatrixInt() {
 
 	srandom(testSeed);
 	initMatrixInt(a, testSize);
+	srandom(testSeed);
 	initMatrixInt(b, testSize);
 
 	for (i = 0; i < testSize; i++) {
