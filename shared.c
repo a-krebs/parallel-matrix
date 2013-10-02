@@ -31,6 +31,51 @@ void printTOD() {
 }
 
 /*
+ * Print the time elapsed since r1 given r2
+ * (IE r2 is the later time, r1 is the earlier time.
+ */
+void printElapsedTime(struct timeval *r1, struct timeval *r2) {
+	struct timeval diff;
+
+	if (timevalSubtract(&diff, r2, r1) != 0) {
+		printf("Time difference negative!");
+		return;
+	}
+
+	printf("%ld.%06ld", diff.tv_sec, diff.tv_usec);
+}
+
+/* Subtract the `struct timeval' values X and Y (X - Y),
+ * storing the result in RESULT.
+ *
+ * Return 1 if the difference is negative, otherwise 0.
+ *
+ * This function is taken from:
+ * http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
+ */
+int timevalSubtract(struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+	if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+		y->tv_usec -= 1000000 * nsec;
+		y->tv_sec += nsec;
+	}
+	if (x->tv_usec - y->tv_usec > 1000000) {
+		int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+		y->tv_usec += 1000000 * nsec;
+		y->tv_sec -= nsec;
+	}
+
+	/* Compute the time remaining to wait.
+	   tv_usec is certainly positive. */
+	result->tv_sec = x->tv_sec - y->tv_sec;
+	result->tv_usec = x->tv_usec - y->tv_usec;
+
+	/* Return 1 if result is negative. */
+	return x->tv_sec < y->tv_sec;
+}
+
+/*
  * Given matrices A, B and C, multiply the given rows of A with the
  * appropriate columns in B and write to the correlated space in C.
  *
@@ -78,6 +123,41 @@ void printMatrix(int **m, int size) {
 		printf("\n");
 	}
 	printf("\n");
+}
+
+/*
+ * Allocate matrices A, B, and C to given size.
+ * Initialize A and B with random data using given seed value.
+ *
+ * This is a wrapper function for calls to allocMatrixInt and initMatrixInt.
+ *
+ * Returns 0 if everything works, non-zero otherwise.
+ */
+int setupExp(int ***A, int ***B, int ***C, int size, unsigned int seed) {
+	/* allocated memory */
+	*A = allocMatrixInt(size);
+	*B = allocMatrixInt(size);
+	*C = allocMatrixInt(size);
+
+	if ((*A == NULL) || (*B == NULL) || (*C == NULL)) {
+		return -1;
+	}
+
+	/* initialize matric contents */
+	srandom(seed);
+	initMatrixInt(*A, size);
+	initMatrixInt(*B, size);
+
+	return 0;
+}
+
+/*
+ * Clean up allocated matrix memory
+ */
+void tearDownExp(int ***A, int ***B, int ***C, int size) {
+	freeMatrixInt(*A, size);
+	freeMatrixInt(*B, size);
+	freeMatrixInt(*C, size);
 }
 
 /*
@@ -188,7 +268,9 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 		}
 	}
 	
+#if DEBUG
 	printf("p = %d, s = %d, k = %d\n", procs, size, seed);
+#endif
 
 	/* Make sure p is at least 1 */
 	if (procs < 1) {
@@ -277,8 +359,9 @@ static char *test_initMatrixInt() {
 	int **a = allocMatrixInt(testSize);
 	int **b = allocMatrixInt(testSize);
 
-	initMatrixInt(a, testSize, testSeed);
-	initMatrixInt(b, testSize, testSeed);
+	srandom(testSeed);
+	initMatrixInt(a, testSize);
+	initMatrixInt(b, testSize);
 
 	for (i = 0; i < testSize; i++) {
 		for (j = 0; j < testSize; j++) {
