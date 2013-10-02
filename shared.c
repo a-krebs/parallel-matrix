@@ -31,6 +31,52 @@ void printTOD() {
 }
 
 /*
+ * Print the time elapsed since the given reference time.
+ */
+void printElapsedTime(struct timeval reference) {
+	struct timeval now;
+	struct timeval diff;
+
+	gettimeofday(&now, NULL);
+
+	if (timevalSubtract(&diff, &reference, &now) != 0) {
+		printf("Time difference negative!\n");
+	}
+
+	printf("%ld.%06ld\n", diff.tv_sec, diff.tv_usec);
+}
+
+/* Subtract the `struct timeval' values X and Y (X - Y),
+ * storing the result in RESULT.
+ *
+ * Return 1 if the difference is negative, otherwise 0.
+ *
+ * This function is taken from:
+ * http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
+ */
+int timevalSubtract(struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+	if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+		y->tv_usec -= 1000000 * nsec;
+		y->tv_sec += nsec;
+	}
+	if (x->tv_usec - y->tv_usec > 1000000) {
+		int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+		y->tv_usec += 1000000 * nsec;
+		y->tv_sec -= nsec;
+	}
+
+	/* Compute the time remaining to wait.
+	   tv_usec is certainly positive. */
+	result->tv_sec = x->tv_sec - y->tv_sec;
+	result->tv_usec = x->tv_usec - y->tv_usec;
+
+	/* Return 1 if result is negative. */
+	return x->tv_sec < y->tv_sec;
+}
+
+/*
  * Given matrices A, B and C, multiply the given rows of A with the
  * appropriate columns in B and write to the correlated space in C.
  *

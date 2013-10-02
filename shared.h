@@ -18,6 +18,26 @@ struct arguments {
 void multiply(int **A, int **B, int **C, int size, int rStart, int rEnd);
 
 /*
+ * Print the time of day to stdout.
+ */
+void printTOD();
+
+/*
+ * Print the time elapsed since the given reference time.
+ */
+void printElapsedTime(struct timeval reference);
+
+/* Subtract the `struct timeval' values X and Y (X - Y),
+ * storing the result in RESULT.
+ *
+ * Return 1 if the difference is negative, otherwise 0.
+ *
+ * This function is taken from:
+ * http://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
+ */
+int timevalSubtract(struct timeval *result, struct timeval *x, struct timeval *y);
+
+/*
  * Print the given matrix to stdout.
  */
 void printMatrix(int **m, int size);
