@@ -9,6 +9,8 @@
 #include "thread.h"
 
 pthread_barrier_t barrier;
+struct timeval phase2Start;
+struct timeval phase2End;
 
 int main(int argc, char *argv[]) {
 	/* matrices */
@@ -23,6 +25,10 @@ int main(int argc, char *argv[]) {
 	/* threads */
 	pthread_t *threads = NULL;
 	struct threadArgs *threadArgs = NULL;
+	/* Master thread has own argument struct outside of array.
+	 * Making it part of the array was causing off-by-one when dispatching
+	 * threads. */
+	struct threadArgs *masterArgs = NULL;
 	int numThreads = 0;
 	int rStart = 0;
 	int rEnd = 0;
@@ -31,7 +37,6 @@ int main(int argc, char *argv[]) {
 	/* timekeeping */
 	struct timeval baseline;		// start
 	struct timeval phase1End;		// before barrier
-	struct timeval phase2Start;		// after barrier
 	struct timeval end;			// after phase 2
 	
 	/* get arguments */
@@ -55,9 +60,10 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	/* allocate memory for threads */
+	/* allocate memory for threads and arguments */
 	threads = calloc(numThreads, sizeof(pthread_t));
 	threadArgs = calloc(numThreads, sizeof(struct threadArgs));
+	masterArgs = calloc(1, sizeof(struct threadArgs));
 
 	/* initialize barrier */
 	if (pthread_barrier_init(&barrier, NULL, args->procs) != 0) {
@@ -65,7 +71,7 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	/* split work between threads */
+	/* Split work between threads. */
 	for (i = 0; i < numThreads; i++) {
 		rEnd = getRangeEnd(rStart, args->procs, size);
 		threadArgs[i].rStart = rStart;
@@ -79,8 +85,15 @@ int main(int argc, char *argv[]) {
 		threadArgs[i].size = size;
 		threadArgs[i].id = i;
 	}
-	/* set rEnd for master thread */
+	/* set up master thread arguments */
 	rEnd = getRangeEnd(rStart, args->procs, size);
+	masterArgs->rStart = rStart;
+	masterArgs->rEnd = rEnd;
+	masterArgs->A = A;
+	masterArgs->B = B;
+	masterArgs->C = C;
+	masterArgs->size = size;
+	masterArgs->id = 0;
 
 	/* Spin up threads */
 	for (i = 0; i < numThreads; i++) {
@@ -91,33 +104,17 @@ int main(int argc, char *argv[]) {
 	gettimeofday(&phase1End, NULL);
 
 	/* END PHASE 1 */
-
-	/* barrier */
-	pthread_barrier_wait(&barrier);
-
 	/* BEGIN PHASE 2 */
 
-	/* phase 2 time */
-	gettimeofday(&phase2Start, NULL);
-	
+	/* master thread work */
+	slave((void *)masterArgs);
+
+	/* PHASE 2 END */
+
 #if VERIFY
 	printMatrix(A, size);
 	printMatrix(B, size);
 #endif
-
-#if DEBUG
-	printf("Master args: %d, %d\n", rStart, rEnd);
-#endif
-	/* master thread work */
-	multiply(A, B, C, size, rStart, rEnd);
-
-	/* barrier */
-	pthread_barrier_wait(&barrier);
-
-	/* PHASE 2 END */
-
-	/* end time */
-	gettimeofday(&end, NULL);
 
 	/* join threads */
 	for (i = 0; i < numThreads; i++) {
@@ -125,6 +122,9 @@ int main(int argc, char *argv[]) {
 			perror("Pthread_join fails");
 		}
 	}
+
+	/* end time */
+	gettimeofday(&end, NULL);
 
 #if VERIFY
 	printMatrix(C, size);
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
 	printf("parallel,%d,%d,%d,", seed, size, args->procs);
 	printElapsedTime(&baseline, &phase1End);
 	printf(",");
-	printElapsedTime(&phase2Start, &end);
+	printElapsedTime(&phase2Start, &phase2End);
 	printf(",");
 	printElapsedTime(&baseline, &end);
 	printf("\n");
