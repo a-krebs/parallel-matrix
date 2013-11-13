@@ -241,7 +241,7 @@ int parse_args(int argc, char *argv[], struct arguments* args) {
 			size = atoi(optarg);
 			break;
 		case 'k':
-			option = atoi(optarg);
+			seed = atoi(optarg);
 			break;
 		case '?':
 			if ((optopt == 'p')
